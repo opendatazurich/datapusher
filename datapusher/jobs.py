@@ -15,6 +15,7 @@ import decimal
 import hashlib
 import cStringIO
 import time
+from asbool import asbool
 
 import messytables
 from slugify import slugify
@@ -28,6 +29,10 @@ if not locale.getlocale()[0]:
 
 MAX_CONTENT_LENGTH = web.app.config.get('MAX_CONTENT_LENGTH') or 10485760
 DOWNLOAD_TIMEOUT = 30
+SSL_VERIFY = asbool(web.app.config.get('ckan.datapusher.check_ssl_verify'), True)
+
+if not SSL_VERIFY:
+    requests.packages.urllib3.disable_warnings()
 
 _TYPE_MAPPING = {
     'String': 'text',
@@ -176,7 +181,8 @@ def delete_datastore_resource(resource_id, api_key, ckan_url):
                                  data=json.dumps({'id': resource_id,
                                                   'force': True}),
                                  headers={'Content-Type': 'application/json',
-                                          'Authorization': api_key}
+                                          'Authorization': api_key},
+                                 verify=SSL_VERIFY
                                  )
         check_response(response, delete_url, 'CKAN',
                        good_status=(201, 200, 404), ignore_no_success=True)
@@ -218,6 +224,7 @@ def send_resource_to_datastore(resource, headers, records, api_key, ckan_url):
                       data=json.dumps(request, cls=DatastoreEncoder),
                       headers={'Content-Type': 'application/json',
                                'Authorization': api_key},
+                      verify=SSL_VERIFY
                       )
     check_response(r, url, 'CKAN DataStore')
 
@@ -234,7 +241,8 @@ def update_resource(resource, api_key, ckan_url):
         url,
         data=json.dumps(resource),
         headers={'Content-Type': 'application/json',
-                 'Authorization': api_key})
+                 'Authorization': api_key},
+        verify=SSL_VERIFY)
 
     check_response(r, url, 'CKAN')
 
@@ -247,7 +255,8 @@ def get_resource(resource_id, ckan_url, api_key):
     r = requests.post(url,
                       data=json.dumps({'id': resource_id}),
                       headers={'Content-Type': 'application/json',
-                               'Authorization': api_key}
+                               'Authorization': api_key},
+                      verify=SSL_VERIFY
                       )
     check_response(r, url, 'CKAN')
 
