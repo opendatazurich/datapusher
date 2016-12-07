@@ -4,3 +4,4 @@ python-slugify
 Requests
 argparse
 html5lib==0.9999999
+asbool

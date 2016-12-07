@@ -29,7 +29,7 @@ if not locale.getlocale()[0]:
 
 MAX_CONTENT_LENGTH = web.app.config.get('MAX_CONTENT_LENGTH') or 10485760
 DOWNLOAD_TIMEOUT = 30
-SSL_VERIFY = asbool(web.app.config.get('ckan.datapusher.check_ssl_verify'), True)
+SSL_VERIFY = asbool(web.app.config.get('ckan.datapusher.check_ssl_verify'))
 
 if not SSL_VERIFY:
     requests.packages.urllib3.disable_warnings()
@@ -178,11 +178,11 @@ def delete_datastore_resource(resource_id, api_key, ckan_url):
     try:
         delete_url = get_url('datastore_delete', ckan_url)
         response = requests.post(delete_url,
+                                 verify=SSL_VERIFY,
                                  data=json.dumps({'id': resource_id,
                                                   'force': True}),
                                  headers={'Content-Type': 'application/json',
-                                          'Authorization': api_key},
-                                 verify=SSL_VERIFY
+                                          'Authorization': api_key}
                                  )
         check_response(response, delete_url, 'CKAN',
                        good_status=(201, 200, 404), ignore_no_success=True)
@@ -221,10 +221,10 @@ def send_resource_to_datastore(resource, headers, records, api_key, ckan_url):
     name = resource.get('name')
     url = get_url('datastore_create', ckan_url)
     r = requests.post(url,
+                      verify=SSL_VERIFY,
                       data=json.dumps(request, cls=DatastoreEncoder),
                       headers={'Content-Type': 'application/json',
-                               'Authorization': api_key},
-                      verify=SSL_VERIFY
+                               'Authorization': api_key}
                       )
     check_response(r, url, 'CKAN DataStore')
 
@@ -239,10 +239,11 @@ def update_resource(resource, api_key, ckan_url):
     url = get_url('resource_update', ckan_url)
     r = requests.post(
         url,
+        verify=SSL_VERIFY,
         data=json.dumps(resource),
         headers={'Content-Type': 'application/json',
-                 'Authorization': api_key},
-        verify=SSL_VERIFY)
+                 'Authorization': api_key}
+    )
 
     check_response(r, url, 'CKAN')
 
@@ -253,10 +254,10 @@ def get_resource(resource_id, ckan_url, api_key):
     """
     url = get_url('resource_show', ckan_url)
     r = requests.post(url,
+                      verify=SSL_VERIFY,
                       data=json.dumps({'id': resource_id}),
                       headers={'Content-Type': 'application/json',
-                               'Authorization': api_key},
-                      verify=SSL_VERIFY
+                               'Authorization': api_key}
                       )
     check_response(r, url, 'CKAN')
 
